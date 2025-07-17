@@ -23,15 +23,36 @@ export default function CryptoAuthPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Form submitted:", formData)
+    // const name : string = formData.name;
+    // const email : string = formData.email;
+    // const pass : string = formData.password;
+    // fetch('http://localhost:8080/user/create', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify({ name, email, pass }),
+    // })
+    //   .then(() => {
+    //     setUser({
+    //       name: name,
+    //       email: email,
+    //       sub: null,
+    //       picture: null,
+    //     });
+
+    //     router.push('/dashboard');
+    //   })
+    //   .catch((err) => {
+    //     console.error('Token exchange error:', err);
+    //   });
   }
+  
 
   const handleGoogleLogin = () => {
     const clientId = '935505833036-bj7sl40j8652cbh1thmfg6lvjfuqrpdq.apps.googleusercontent.com';
     const redirectUri = 'http://localhost:3000/oauth/callback'; // your frontend route to handle callback
     const state = 'randomState'; // generate dynamically for CSRF protection
 
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid%20email%20profile&state=${state}&access_type=offline&prompt=consent`;
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid%20email%20profile&state=${state}&access_type=offline&prompt=consent`.replace(/\s+/g, '');;
 
     window.location.href = authUrl;
   }
@@ -244,5 +265,5 @@ export default function CryptoAuthPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

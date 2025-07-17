@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
 
@@ -8,10 +8,12 @@ export default function OAuthCallbackPage() {
   const {setUser} = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [hogya, setHogya] = useState(false);
 
   useEffect(() => {
     const code = searchParams.get('code');
     const state = searchParams.get('state');
+
 
     if (code) {
       console.log('Authorization Code:', code);
@@ -29,7 +31,13 @@ export default function OAuthCallbackPage() {
           setUser({
             name: data.name,
             email: data.email,
+            subId: data.subId,
+            pic: data.pic,
           });
+
+          console.log(JSON.stringify(data));
+
+          localStorage.setItem('bnda', JSON.stringify(data));
 
           router.push('/dashboard');
         })

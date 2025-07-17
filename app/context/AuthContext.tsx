@@ -1,16 +1,27 @@
 'use client';
 
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 
 interface AuthContextProps {
-  user: { name: string; email: string } | null;
-  setUser: React.Dispatch<React.SetStateAction<{ name: string; email: string } | null>>;
+  user: { name: string; email: string ; subId: string | null ; pic: string | null} | null;
+  setUser: React.Dispatch<React.SetStateAction<{ name: string; email: string ; subId: string | null ; pic: string | null} | null>>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string ; subId: string | null ; pic: string | null} | null>(null);
+
+  useEffect(() => {
+    const mila = localStorage.getItem('bnda');
+
+    if (mila) {
+      const temp = JSON.parse(mila);
+      setUser(temp);
+      console.log(temp.sub);
+    }
+
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, setUser }}>
