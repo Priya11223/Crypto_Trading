@@ -3,14 +3,14 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 
 interface AuthContextProps {
-  user: { name: string; email: string ; subId: string | null ; pic: string | null} | null;
-  setUser: React.Dispatch<React.SetStateAction<{ name: string; email: string ; subId: string | null ; pic: string | null} | null>>;
+  user: { name: string; email: string ; subId: string | null ; pic: string | null ; jwt: string} | null;
+  setUser: React.Dispatch<React.SetStateAction<{ name: string; email: string ; subId: string | null ; pic: string | null ; jwt: string} | null>>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<{ name: string; email: string ; subId: string | null ; pic: string | null} | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string ; subId: string | null ; pic: string | null ; jwt: string} | null>(null);
 
   useEffect(() => {
     const mila = localStorage.getItem('bnda');
@@ -18,9 +18,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (mila) {
       const temp = JSON.parse(mila);
       setUser(temp);
-      console.log(temp.sub);
     }
-
   }, []);
 
   return (

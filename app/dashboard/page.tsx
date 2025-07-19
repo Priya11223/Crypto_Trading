@@ -84,7 +84,7 @@ export default function CryptoDashboard() {
               d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
             ></path>
           </svg>
-          <p className="text-lg font-medium text-gray-700">Logging you in via Google...</p>
+          <p className="text-lg font-medium text-gray-700">Loading</p>
         </div>
       </div>
     );

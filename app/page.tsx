@@ -1,11 +1,17 @@
 "use client"
 
 import type React from "react"
-
+import axios from 'axios'
 import { useState } from "react"
 import { Bitcoin, Mail, Lock, User, Eye, EyeOff } from "lucide-react"
+import { useAuth } from '@/app/context/AuthContext';
+import { useRouter } from "next/navigation"
+import { format } from "path"
+
 
 export default function CryptoAuthPage() {
+  const {setUser} = useAuth();
+  const router = useRouter();
   const [isLogin, setIsLogin] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -19,31 +25,32 @@ export default function CryptoAuthPage() {
       ...formData,
       [e.target.name]: e.target.value,
     })
+    console.log(formData.password);
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // const name : string = formData.name;
-    // const email : string = formData.email;
-    // const pass : string = formData.password;
-    // fetch('http://localhost:8080/user/create', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ name, email, pass }),
-    // })
-    //   .then(() => {
-    //     setUser({
-    //       name: name,
-    //       email: email,
-    //       sub: null,
-    //       picture: null,
-    //     });
+    if(isLogin == false){
+      try {
+        const res = await axios.post('http://localhost:8080/auth/create/user', formData);
+    
+        console.log(res.data);
 
-    //     router.push('/dashboard');
-    //   })
-    //   .catch((err) => {
-    //     console.error('Token exchange error:', err);
-    //   });
+        setUser({
+          name: formData.name,
+          email: formData.email,
+          subId: res.data.subId ?? null,
+          pic: res.data.pic ?? null,
+          jwt: res.data.jwt,
+        });
+
+        localStorage.setItem('bnda', JSON.stringify(res.data));
+    
+        router.push('/dashboard');
+      } catch (err) {
+        console.error(err);
+      }
+    }
   }
   
 

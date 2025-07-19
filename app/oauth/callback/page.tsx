@@ -33,9 +33,8 @@ export default function OAuthCallbackPage() {
             email: data.email,
             subId: data.subId,
             pic: data.pic,
+            jwt: data.jwt,
           });
-
-          console.log(JSON.stringify(data));
 
           localStorage.setItem('bnda', JSON.stringify(data));
 
