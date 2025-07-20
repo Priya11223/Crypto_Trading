@@ -13,11 +13,14 @@ export default function CryptoAuthPage() {
   const {setUser} = useAuth();
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true)
+  const [userExist, setUserExist] = useState(false);
   const [showPassword, setShowPassword] = useState(false)
+  const [invalidCred, setInvalidCred] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
+    message: "",
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,17 +28,55 @@ export default function CryptoAuthPage() {
       ...formData,
       [e.target.name]: e.target.value,
     })
-    console.log(formData.password);
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if(isLogin == false){
-      try {
-        const res = await axios.post('http://localhost:8080/auth/create/user', formData);
-    
-        console.log(res.data);
+  const LogIn = async () => {
+    try{
+      const res = await axios.post('http://localhost:8080/auth/user/login', formData);
+      if(res.data.message == "Success"){
+        console.log("yeah");
+        setUser({
+          name: formData.name,
+          email: formData.email,
+          subId: res.data.subId ?? null,
+          pic: res.data.pic ?? null,
+          jwt: res.data.jwt,
+        })
+        localStorage.setItem('bnda', JSON.stringify(res.data));
 
+        
+      }
+      router.push('/dashboard');
+    }
+    catch(err){
+      setInvalidCred(true);
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        message: "",
+      });
+      console.log(err);
+    }
+  }
+
+  const signUp = async () => {
+    try {
+      const res = await axios.post('http://localhost:8080/auth/user/signIn', formData);
+  
+      console.log(res.data);
+
+      if(res.data.status == "user"){
+        setIsLogin(true);
+        setUserExist(true);
+        setFormData({
+          name: "",
+          email: "",
+          password: "",
+          message: "",
+        });
+      }
+      else{
         setUser({
           name: formData.name,
           email: formData.email,
@@ -43,14 +84,30 @@ export default function CryptoAuthPage() {
           pic: res.data.pic ?? null,
           jwt: res.data.jwt,
         });
-
+  
         localStorage.setItem('bnda', JSON.stringify(res.data));
     
         router.push('/dashboard');
-      } catch (err) {
-        console.error(err);
       }
+    } catch (err) {
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        message: "",
+      });
+      console.error(err);
     }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setUserExist(false);
+    setInvalidCred(false);
+    if(isLogin == false)
+      signUp();
+    else
+      LogIn();
   }
   
 
@@ -192,6 +249,18 @@ export default function CryptoAuthPage() {
                   Forgot password?
                 </button>
               </div>
+            )}
+
+            {userExist && (
+              <div className="text-center text-sm text-red-600">
+                User Already exist! please Login
+              </div>
+            )}
+
+            {invalidCred && (
+              <div className="text-center text-sm text-red-600">
+              Invalid Email or Password
+            </div>
             )}
 
             <button
