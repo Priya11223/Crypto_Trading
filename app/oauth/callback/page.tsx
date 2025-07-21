@@ -38,7 +38,7 @@ export default function OAuthCallbackPage() {
 
           localStorage.setItem('bnda', JSON.stringify(data));
 
-          router.push('/dashboard');
+          router.push('/home');
         })
         .catch((err) => {
           console.error('Token exchange error:', err);

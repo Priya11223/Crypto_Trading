@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import axios from "axios"
 import {
   Bitcoin,
   TrendingUp,
@@ -16,25 +17,6 @@ import {
   Flame,
 } from "lucide-react"
 import { useAuth } from "../context/AuthContext"
-
-// Mock data for top 50 cryptocurrencies (showing first 20 for demo)
-const top50Coins = [
-  { id: 1, name: "Bitcoin", symbol: "BTC", price: 43250.8, change24h: 2.45, icon: "₿" },
-  { id: 2, name: "Ethereum", symbol: "ETH", price: 2580.45, change24h: -1.23, icon: "Ξ" },
-  { id: 3, name: "Binance Coin", symbol: "BNB", price: 315.67, change24h: 3.78, icon: "⬡" },
-  { id: 4, name: "Solana", symbol: "SOL", price: 98.32, change24h: 5.42, icon: "◎" },
-  { id: 5, name: "Cardano", symbol: "ADA", price: 0.485, change24h: -2.15, icon: "₳" },
-  { id: 6, name: "Polygon", symbol: "MATIC", price: 0.892, change24h: 4.67, icon: "⬟" },
-  { id: 7, name: "Chainlink", symbol: "LINK", price: 14.23, change24h: 1.89, icon: "⬢" },
-  { id: 8, name: "Litecoin", symbol: "LTC", price: 72.45, change24h: -0.56, icon: "Ł" },
-  { id: 9, name: "Polkadot", symbol: "DOT", price: 5.67, change24h: 3.21, icon: "●" },
-  { id: 10, name: "Avalanche", symbol: "AVAX", price: 24.89, change24h: 6.78, icon: "▲" },
-  { id: 11, name: "Uniswap", symbol: "UNI", price: 6.45, change24h: -1.45, icon: "🦄" },
-  { id: 12, name: "Cosmos", symbol: "ATOM", price: 8.92, change24h: 2.34, icon: "⚛" },
-  { id: 13, name: "Algorand", symbol: "ALGO", price: 0.234, change24h: 4.56, icon: "◊" },
-  { id: 14, name: "VeChain", symbol: "VET", price: 0.0234, change24h: -3.21, icon: "V" },
-  { id: 15, name: "Stellar", symbol: "XLM", price: 0.123, change24h: 1.78, icon: "✦" },
-]
 
 // Mock data for trending coins
 const trendingCoins = [
@@ -54,11 +36,61 @@ const portfolioData = [
   { symbol: "ADA", amount: 15420.5, value: 7478.94, change: -2.15 },
 ]
 
+interface CoinData {
+  id: string;
+  symbol: string;
+  name: string;
+  image: string;
+  current_price: number;
+  market_cap: number;
+  market_cap_rank: number;
+  fully_diluted_valuation: number;
+  total_volume: number;
+  high_24h: number;
+  low_24h: number;
+  price_change_24h: number;
+  price_change_percentage_24h: number;
+  market_cap_change_24h: number;
+  market_cap_change_percentage_24h: number;
+  circulating_supply: number;
+  total_supply: number;
+  max_supply: number;
+  ath: number;
+  ath_change_percentage: number;
+  ath_date: string; 
+  atl: number;
+  atl_change_percentage: number;
+  atl_date: string; 
+  roi: null | {
+    times: number;
+    currency: string;
+    percentage: number;
+  };
+  last_updated: string; 
+}
+
 export default function CryptoDashboard() {
   const {user} = useAuth();
   const [showBalance, setShowBalance] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [top50, setTop50] = useState<CoinData[]>([])
+
+  useEffect(() => {
+    const fetchTop50Coins = async () => {
+      try {
+        const response = await axios.get<CoinData[]>('http://localhost:8080/coins/top50');
+        setTop50(response.data);
+        console.log(response.data);
+      } catch (error) {
+        console.error("Error fetching top 50 coins:", error);
+      }
+    };
+
+    if (user) {
+      fetchTop50Coins();
+    }
+  }, [user]);
 
   if(user == null){
     return (
@@ -91,7 +123,7 @@ export default function CryptoDashboard() {
  } 
 
   const coinsPerSlide = 5
-  const totalSlides = Math.ceil(top50Coins.length / coinsPerSlide)
+  const totalSlides = Math.ceil(top50.length / coinsPerSlide)
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % totalSlides)
@@ -99,11 +131,6 @@ export default function CryptoDashboard() {
 
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides)
-  }
-
-  const getCurrentSlideCoins = () => {
-    const startIndex = currentSlide * coinsPerSlide
-    return top50Coins.slice(startIndex, startIndex + coinsPerSlide)
   }
 
   const handleWatchlistClick = () => {
@@ -207,16 +234,14 @@ export default function CryptoDashboard() {
             </div>
 
             <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
-              <div className="flex space-x-4 pb-4" style={{ width: `${top50Coins.length * 200}px` }}>
-                {top50Coins.map((coin) => (
+              <div className="flex space-x-4 pb-4">
+                {top50.map((coin) => (
                   <div
                     key={coin.id}
                     className="flex-shrink-0 w-48 bg-slate-700/30 rounded-lg p-4 hover:bg-slate-700/40 transition-all duration-200 cursor-pointer"
                   >
                     <div className="flex items-center justify-between mb-3">
-                      <div className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center">
-                        <span className="text-slate-900 font-bold text-xs">{coin.icon}</span>
-                      </div>
+                      <img src={coin.image} alt={coin.name} className="w-8 h-8 rounded-full" />
                       <button
                         onClick={() => console.log(`Add ${coin.symbol} to watchlist`)}
                         className="p-1 text-slate-400 hover:text-yellow-500 transition-colors"
@@ -226,20 +251,20 @@ export default function CryptoDashboard() {
                       </button>
                     </div>
                     <div>
-                      <p className="text-white font-medium text-sm">{coin.symbol}</p>
+                      <p className="text-white font-medium text-sm">{coin.symbol.toUpperCase()}</p>
                       <p className="text-slate-400 text-xs mb-2">{coin.name}</p>
                       <p className="text-white font-semibold">
-                        ${coin.price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ${coin.current_price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </p>
                       <div className="flex items-center mt-1">
-                        {coin.change24h >= 0 ? (
+                        {coin.price_change_percentage_24h >= 0 ? (
                           <TrendingUp className="w-3 h-3 text-green-500 mr-1" />
                         ) : (
                           <TrendingDown className="w-3 h-3 text-red-500 mr-1" />
                         )}
-                        <span className={`text-xs ${coin.change24h >= 0 ? "text-green-500" : "text-red-500"}`}>
-                          {coin.change24h >= 0 ? "+" : ""}
-                          {coin.change24h}%
+                        <span className={`text-xs ${coin.price_change_percentage_24h >= 0 ? "text-green-500" : "text-red-500"}`}>
+                          {coin.price_change_percentage_24h >= 0 ? "+" : ""}
+                          {coin.price_change_percentage_24h.toFixed(2)}%
                         </span>
                       </div>
                     </div>

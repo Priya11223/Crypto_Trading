@@ -33,20 +33,16 @@ export default function CryptoAuthPage() {
   const LogIn = async () => {
     try{
       const res = await axios.post('http://localhost:8080/auth/user/login', formData);
-      if(res.data.message == "Success"){
-        console.log("yeah");
-        setUser({
-          name: formData.name,
-          email: formData.email,
-          subId: res.data.subId ?? null,
-          pic: res.data.pic ?? null,
-          jwt: res.data.jwt,
+      console.log("yeah");
+      setUser({
+        name: res.data.name,
+        email: formData.email,
+        subId: res.data.subId ?? null,
+        pic: res.data.pic ?? null,
+        jwt: res.data.jwt,
         })
         localStorage.setItem('bnda', JSON.stringify(res.data));
-
-        
-      }
-      router.push('/dashboard');
+      router.push('/home');
     }
     catch(err){
       setInvalidCred(true);
@@ -87,7 +83,7 @@ export default function CryptoAuthPage() {
   
         localStorage.setItem('bnda', JSON.stringify(res.data));
     
-        router.push('/dashboard');
+        router.push('/home');
       }
     } catch (err) {
       setFormData({
