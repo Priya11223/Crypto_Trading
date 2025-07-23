@@ -18,15 +18,33 @@ import {
 } from "lucide-react"
 import { useAuth } from "../context/AuthContext"
 
-// Mock data for trending coins
-const trendingCoins = [
-  { id: 1, name: "Pepe", symbol: "PEPE", price: 0.00000123, change24h: 45.67, rank: 1, icon: "🐸" },
-  { id: 2, name: "Shiba Inu", symbol: "SHIB", price: 0.0000089, change24h: 23.45, rank: 2, icon: "🐕" },
-  { id: 3, name: "Dogecoin", symbol: "DOGE", price: 0.078, change24h: 12.34, rank: 3, icon: "🐶" },
-  { id: 4, name: "Floki", symbol: "FLOKI", price: 0.000034, change24h: 34.56, rank: 4, icon: "🚀" },
-  { id: 5, name: "SafeMoon", symbol: "SAFEMOON", price: 0.00012, change24h: 67.89, rank: 5, icon: "🌙" },
-  { id: 6, name: "Baby Doge", symbol: "BABYDOGE", price: 0.0000000234, change24h: 89.12, rank: 6, icon: "👶" },
-]
+interface CoinWrapper {
+  item: {
+    id: string;
+    coin_id: number;
+    name: string;
+    symbol: string;
+    market_cap_rank: number;
+    small: string;
+    large: string;
+    slug: string;
+    price_btc: number;
+    score: number;
+    data: {
+      price: number;
+      price_btc: string;
+      price_change_percentage_24h: {
+        [currency: string]: number;
+      };
+      market_cap: number;
+      market_cap_btc: string;
+      total_volume: string;
+      total_volume_btc: string;
+      sparkline: string;
+      content: string | null;
+    };
+  }
+}
 
 // Mock user portfolio data
 const portfolioData = [
@@ -75,20 +93,31 @@ export default function CryptoDashboard() {
   const [searchTerm, setSearchTerm] = useState("")
   const [currentSlide, setCurrentSlide] = useState(0)
   const [top50, setTop50] = useState<CoinData[]>([])
+  const [trendingCoins, setTrendingCoins] = useState<CoinWrapper[]>([])
 
   useEffect(() => {
     const fetchTop50Coins = async () => {
       try {
         const response = await axios.get<CoinData[]>('http://localhost:8080/coins/top50');
         setTop50(response.data);
-        console.log(response.data);
       } catch (error) {
         console.error("Error fetching top 50 coins:", error);
       }
     };
 
+    async function fetchTrendingCoins() {
+      try{
+        const res = await axios.get('http://localhost:8080/coins/trending');
+        setTrendingCoins(res.data.coins.slice(0, 9));
+        console.log(trendingCoins); // not res.data
+      }catch (error){
+        console.error("Error fetching trending coins: ", error);
+      }
+    }
+
     if (user) {
       fetchTop50Coins();
+      fetchTrendingCoins();
     }
   }, [user]);
 
@@ -124,6 +153,27 @@ export default function CryptoDashboard() {
 
   const coinsPerSlide = 5
   const totalSlides = Math.ceil(top50.length / coinsPerSlide)
+
+  const handleCoinClick = (coin: CoinData) => {
+    // Replace this with your desired action
+    console.log("Coin clicked:", coin);
+  };
+
+  const addToWishlist = async (coin: CoinData) => {
+    try{
+      const token = user.jwt;
+      const id = coin.id;
+      console.log(id);
+      const response = await axios.post(`http://localhost:8080/api/wishlist/add/${id}`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+      console.log(response.data);
+    }catch (err){
+      console.log("Error adding coin to list: " + err);
+    }
+  } 
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % totalSlides)
@@ -226,11 +276,11 @@ export default function CryptoDashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Top 50 Coins Slider */}
+        {/* Top 10 Coins Slider */}
         <div className="mb-8">
           <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 overflow-hidden">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-white">Top 50 Cryptocurrencies</h2>
+              <h2 className="text-xl font-semibold text-white">Top 10 Cryptocurrencies</h2>
             </div>
 
             <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
@@ -238,12 +288,13 @@ export default function CryptoDashboard() {
                 {top50.map((coin) => (
                   <div
                     key={coin.id}
+                    onClick={() => handleCoinClick(coin)}
                     className="flex-shrink-0 w-48 bg-slate-700/30 rounded-lg p-4 hover:bg-slate-700/40 transition-all duration-200 cursor-pointer"
                   >
                     <div className="flex items-center justify-between mb-3">
                       <img src={coin.image} alt={coin.name} className="w-8 h-8 rounded-full" />
                       <button
-                        onClick={() => console.log(`Add ${coin.symbol} to watchlist`)}
+                        onClick={() => addToWishlist(coin)}
                         className="p-1 text-slate-400 hover:text-yellow-500 transition-colors"
                         title={`Add ${coin.name} to watchlist`}
                       >
@@ -287,38 +338,45 @@ export default function CryptoDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {trendingCoins.map((coin) => (
                 <div
-                  key={coin.id}
+                  key={coin.item.id}
                   className="bg-gradient-to-r from-slate-700/30 to-slate-700/20 rounded-lg p-4 hover:from-slate-700/40 hover:to-slate-700/30 transition-all duration-200 cursor-pointer border border-orange-500/20"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center">
                       <div className="relative mr-3">
                         <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 rounded-lg flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-200">
-                          <span className="text-white font-bold text-xs drop-shadow-sm">#{coin.rank}</span>
+                          <span className="text-white font-bold text-xs drop-shadow-sm">#{coin.item.market_cap_rank}</span>
                         </div>
                         <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
                       </div>
-                      <div className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center">
-                        <span className="text-slate-900 font-bold text-xs">{coin.icon}</span>
+                      <div className="w-8 h-8 bg-gradient-to-r rounded-full flex items-center justify-center">
+                      <img src={coin.item.small} alt={coin.item.name} className="w-8 h-8 rounded-full" />
                       </div>
                     </div>
                     <button
-                      onClick={() => console.log(`Add ${coin.symbol} to watchlist`)}
+                      onClick={() => console.log(`Add ${coin.item.symbol} to watchlist`)}
                       className="p-1 text-slate-400 hover:text-yellow-500 transition-colors"
-                      title={`Add ${coin.name} to watchlist`}
+                      title={`Add ${coin.item.name} to watchlist`}
                     >
                       <BookmarkPlus className="w-3 h-3" />
                     </button>
                   </div>
                   <div>
-                    <p className="text-white font-medium">{coin.symbol}</p>
-                    <p className="text-slate-400 text-sm mb-2">{coin.name}</p>
+                    <p className="text-white font-medium">{coin.item.symbol}</p>
+                    <p className="text-slate-400 text-sm mb-2">{coin.item.name}</p>
                     <p className="text-white font-semibold">
-                      ${coin.price.toLocaleString("en-US", { minimumFractionDigits: 8, maximumFractionDigits: 8 })}
+                      ${coin.item.data.price.toLocaleString("en-US", { minimumFractionDigits: 8, maximumFractionDigits: 8 })}
                     </p>
                     <div className="flex items-center mt-2">
-                      <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                      <span className="text-green-500 font-semibold">+{coin.change24h}%</span>
+                      {coin.item.data.price_change_percentage_24h.usd >= 0 ? (
+                          <TrendingUp className="w-3 h-3 text-green-500 mr-1" />
+                        ) : (
+                          <TrendingDown className="w-3 h-3 text-red-500 mr-1" />
+                        )}
+                     <span className={`text-xs ${coin.item.data.price_change_percentage_24h.usd >= 0 ? "text-green-500" : "text-red-500"}`}>
+                          {coin.item.data.price_change_percentage_24h.usd >= 0 ? "+" : ""}
+                          {coin.item.data.price_change_percentage_24h.usd.toFixed(2)}%
+                        </span>
                       <span className="text-xs text-slate-400 ml-2">24h</span>
                     </div>
                   </div>
