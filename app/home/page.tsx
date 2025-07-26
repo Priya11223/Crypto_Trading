@@ -121,6 +121,10 @@ export default function CryptoDashboard() {
     }
   }, [user]);
 
+  function newFunc(){
+    console.log("Hero funtion");
+  }
+
   if(user == null){
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
