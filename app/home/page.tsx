@@ -95,6 +95,10 @@ export default function CryptoDashboard() {
   const [top50, setTop50] = useState<CoinData[]>([])
   const [trendingCoins, setTrendingCoins] = useState<CoinWrapper[]>([])
 
+  const hero2 = () => {
+    console.log("This the hero2 funtion here: ");
+  }
+
   useEffect(() => {
     const fetchTop50Coins = async () => {
       try {
@@ -120,10 +124,6 @@ export default function CryptoDashboard() {
       fetchTrendingCoins();
     }
   }, [user]);
-
-  function newFunc(){
-    console.log("Hero funtion");
-  }
 
   if(user == null){
     return (
@@ -167,8 +167,8 @@ export default function CryptoDashboard() {
     try{
       const token = user.jwt;
       const id = coin.id;
-      console.log(id);
-      const response = await axios.post(`http://localhost:8080/api/wishlist/add/${id}`, {}, {
+      console.log(token);
+      const response = await axios.patch(`http://localhost:8080/api/wishlist/add/${id}`, {}, {
         headers: {
           Authorization: `Bearer ${token}`,
         }
