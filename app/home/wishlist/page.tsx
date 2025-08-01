@@ -17,6 +17,7 @@ import {
   DollarSign,
   Coins,
   ArrowLeft,
+  Trash2,
 } from "lucide-react"
 
 // Mock wishlist data with comprehensive coin information
@@ -115,6 +116,7 @@ const wishlistCoins = [
 
 export default function WishlistPage() {
   const [searchTerm, setSearchTerm] = useState("")
+  const wishlistCoins = useState();
 
   const formatNumber = (num: number) => {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + "B"
@@ -150,8 +152,8 @@ export default function WishlistPage() {
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
-              <Bitcoin className="w-8 h-8 text-yellow-500 mr-3" />
-              <h1 className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+              <img src="/favicon.png" alt="TradeKaro Logo" className="w-8 h-8 mr-3" />
+              <h1 className="text-xl font-bold bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent">
                 TradeKaro
               </h1>
             </div>
@@ -218,10 +220,10 @@ export default function WishlistPage() {
               {/* Remove from Wishlist Button */}
               <button
                 onClick={() => handleRemoveFromWishlist(coin.id)}
-                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200 z-10"
+                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/20 active:bg-red-500/30 rounded-lg transition-all duration-200 z-10 cursor-pointer"
                 title="Remove from wishlist"
               >
-                <Star className="w-4 h-4 fill-current" />
+                <Trash2 className="w-4 h-4" />
               </button>
 
               <div className="relative z-10 h-full flex flex-col">

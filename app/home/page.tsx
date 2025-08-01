@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import axios from "axios"
 import {
   Bitcoin,
@@ -90,6 +91,7 @@ interface CoinData {
 export default function CryptoDashboard() {
   const {user} = useAuth();
   const [showBalance, setShowBalance] = useState(true)
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("")
   const [currentSlide, setCurrentSlide] = useState(0)
   const [top50, setTop50] = useState<CoinData[]>([])
@@ -163,11 +165,9 @@ export default function CryptoDashboard() {
     console.log("Coin clicked:", coin);
   };
 
-  const addToWishlist = async (coin: CoinData) => {
+  const addToWishlist = async (id: string) => {
     try{
       const token = user.jwt;
-      const id = coin.id;
-      console.log(token);
       const response = await axios.patch(`http://localhost:8080/api/wishlist/add/${id}`, {}, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -188,7 +188,7 @@ export default function CryptoDashboard() {
   }
 
   const handleWatchlistClick = () => {
-    console.log("Watchlist clicked")
+    router.push("/home/wishlist")
   }
 
   const handleWalletClick = () => {
@@ -298,7 +298,7 @@ export default function CryptoDashboard() {
                     <div className="flex items-center justify-between mb-3">
                       <img src={coin.image} alt={coin.name} className="w-8 h-8 rounded-full" />
                       <button
-                        onClick={() => addToWishlist(coin)}
+                        onClick={() => addToWishlist(coin.id)}
                         className="p-1 text-slate-400 hover:text-yellow-500 transition-colors"
                         title={`Add ${coin.name} to watchlist`}
                       >
@@ -358,7 +358,7 @@ export default function CryptoDashboard() {
                       </div>
                     </div>
                     <button
-                      onClick={() => console.log(`Add ${coin.item.symbol} to watchlist`)}
+                      onClick={() => addToWishlist(coin.item.id)}
                       className="p-1 text-slate-400 hover:text-yellow-500 transition-colors"
                       title={`Add ${coin.item.name} to watchlist`}
                     >
