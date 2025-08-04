@@ -2,7 +2,12 @@ import React from 'react'
 
 const page = () => {
   return (
-    <div>page</div>
+    <div>
+      This is the new controller
+      {
+        <p>Here it is</p>
+      }
+    </div>
   )
 }
 
