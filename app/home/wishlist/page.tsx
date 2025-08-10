@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { use, useEffect, useState } from "react"
 import {
   Bitcoin,
   TrendingUp,
@@ -19,104 +19,48 @@ import {
   ArrowLeft,
   Trash2,
 } from "lucide-react"
+import { useAuth } from "../../context/AuthContext";
+import axios from "axios";
+import { headers } from "next/headers";
 
-// Mock wishlist data with comprehensive coin information
-const wishlistCoins = [
-  {
-    id: 1,
-    name: "Bitcoin",
-    symbol: "BTC",
-    price: 43250.8,
-    change24h: 2.45,
-    icon: "₿",
-    rank: 1,
-    high24h: 44120.5,
-    low24h: 42180.3,
-    totalSupply: 21000000,
-    totalVolume: 28450000000,
-    altChange: 5.67,
-    marketCap: 847500000000,
-  },
-  {
-    id: 2,
-    name: "Ethereum",
-    symbol: "ETH",
-    price: 2580.45,
-    change24h: -1.23,
-    icon: "Ξ",
-    rank: 2,
-    high24h: 2650.8,
-    low24h: 2520.1,
-    totalSupply: 120280000,
-    totalVolume: 15230000000,
-    altChange: -2.34,
-    marketCap: 310450000000,
-  },
-  {
-    id: 3,
-    name: "Solana",
-    symbol: "SOL",
-    price: 98.32,
-    change24h: 5.42,
-    icon: "◎",
-    rank: 4,
-    high24h: 102.5,
-    low24h: 94.8,
-    totalSupply: 588000000,
-    totalVolume: 2450000000,
-    altChange: 8.91,
-    marketCap: 57800000000,
-  },
-  {
-    id: 4,
-    name: "Cardano",
-    symbol: "ADA",
-    price: 0.485,
-    change24h: -2.15,
-    icon: "₳",
-    rank: 8,
-    high24h: 0.512,
-    low24h: 0.468,
-    totalSupply: 45000000000,
-    totalVolume: 890000000,
-    altChange: -1.78,
-    marketCap: 17100000000,
-  },
-  {
-    id: 5,
-    name: "Polygon",
-    symbol: "MATIC",
-    price: 0.892,
-    change24h: 4.67,
-    icon: "⬟",
-    rank: 12,
-    high24h: 0.945,
-    low24h: 0.834,
-    totalSupply: 10000000000,
-    totalVolume: 567000000,
-    altChange: 6.23,
-    marketCap: 8920000000,
-  },
-  {
-    id: 6,
-    name: "Chainlink",
-    symbol: "LINK",
-    price: 14.23,
-    change24h: 1.89,
-    icon: "⬢",
-    rank: 15,
-    high24h: 14.89,
-    low24h: 13.67,
-    totalSupply: 1000000000,
-    totalVolume: 234000000,
-    altChange: 3.45,
-    marketCap: 14230000000,
-  },
-]
+
+interface CoinData {
+  id: string;
+  symbol: string;
+  name: string;
+  image: string;
+  current_price: number;
+  market_cap: number;
+  market_cap_rank: number;
+  fully_diluted_valuation: number;
+  total_volume: number;
+  high_24h: number;
+  low_24h: number;
+  price_change_24h: number;
+  price_change_percentage_24h: number;
+  market_cap_change_24h: number;
+  market_cap_change_percentage_24h: number;
+  circulating_supply: number;
+  total_supply: number;
+  max_supply: number;
+  ath: number;
+  ath_change_percentage: number;
+  ath_date: string; 
+  atl: number;
+  atl_change_percentage: number;
+  atl_date: string; 
+  roi: null | {
+    times: number;
+    currency: string;
+    percentage: number;
+  };
+  last_updated: string; 
+}
 
 export default function WishlistPage() {
+  const {user} = useAuth();
   const [searchTerm, setSearchTerm] = useState("")
-  const wishlistCoins = useState();
+  const [wishlistCoins, setWishlistCoins] = useState<CoinData[]>([])
 
   const formatNumber = (num: number) => {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + "B"
@@ -124,6 +68,22 @@ export default function WishlistPage() {
     if (num >= 1e3) return (num / 1e3).toFixed(2) + "K"
     return num.toFixed(2)
   }
+
+  useEffect(() => {
+    const getWishApi = async () =>{
+      const token = user?.jwt;
+      console.log("Here is token" + token);
+      const response = await axios.get<CoinData[]>('http://localhost:8080/api/wishlist/getUserCoin', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+      setWishlistCoins(response.data);
+      console.log(response.data);
+    }
+
+    getWishApi();
+  }, [user])
 
   const formatPrice = (price: number) => {
     if (price < 1) return price.toFixed(6)
@@ -134,7 +94,7 @@ export default function WishlistPage() {
     console.log(`Show graph for ${coinSymbol}`)
   }
 
-  const handleRemoveFromWishlist = (coinId: number) => {
+  const handleRemoveFromWishlist = (coinId: string) => {
     console.log(`Remove coin ${coinId} from wishlist`)
   }
 
@@ -231,9 +191,9 @@ export default function WishlistPage() {
                 <div className="flex items-center mb-6">
                   <div className="relative mr-4">
                     <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <span className="text-white font-bold text-2xl drop-shadow-sm">{coin.icon}</span>
+                      <span className="text-white font-bold text-2xl drop-shadow-sm">{coin.image}</span>
                     </div>
-                    {coin.rank <= 3 && (
+                    {coin.market_cap_rank <= 3 && (
                       <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
                         <Crown className="w-3 h-3 text-slate-900" />
                       </div>
@@ -243,7 +203,7 @@ export default function WishlistPage() {
                     <div className="flex items-center mb-1">
                       <h3 className="text-xl font-bold text-white mr-2">{coin.name}</h3>
                       <span className="px-2 py-1 bg-slate-700/50 text-slate-300 text-xs rounded-full">
-                        #{coin.rank}
+                        #{coin.market_cap_rank}
                       </span>
                     </div>
                     <p className="text-slate-400 text-sm">{coin.symbol}</p>
@@ -253,28 +213,28 @@ export default function WishlistPage() {
                 {/* Price Section */}
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-3xl font-bold text-white">${formatPrice(coin.price)}</span>
+                    <span className="text-3xl font-bold text-white">${formatPrice(coin.current_price)}</span>
                     <div className="flex items-center">
-                      {coin.change24h >= 0 ? (
+                      {coin.price_change_24h >= 0 ? (
                         <TrendingUp className="w-5 h-5 text-green-500 mr-1" />
                       ) : (
                         <TrendingDown className="w-5 h-5 text-red-500 mr-1" />
                       )}
                       <span
-                        className={`text-lg font-semibold ${coin.change24h >= 0 ? "text-green-500" : "text-red-500"}`}
+                        className={`text-lg font-semibold ${coin.price_change_24h >= 0 ? "text-green-500" : "text-red-500"}`}
                       >
-                        {coin.change24h >= 0 ? "+" : ""}
-                        {coin.change24h}%
+                        {coin.price_change_24h >= 0 ? "+" : ""}
+                        {coin.price_change_percentage_24h}%
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center text-sm text-slate-400">
+                  {/* <div className="flex items-center text-sm text-slate-400">
                     <span className="mr-4">24h Alt: </span>
                     <span className={`font-medium ${coin.altChange >= 0 ? "text-green-400" : "text-red-400"}`}>
                       {coin.altChange >= 0 ? "+" : ""}
                       {coin.altChange}%
                     </span>
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Stats Grid */}
@@ -288,11 +248,11 @@ export default function WishlistPage() {
                     <div className="space-y-1">
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-300">High:</span>
-                        <span className="text-green-400 font-medium">${formatPrice(coin.high24h)}</span>
+                        <span className="text-green-400 font-medium">${formatPrice(coin.high_24h)}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-300">Low:</span>
-                        <span className="text-red-400 font-medium">${formatPrice(coin.low24h)}</span>
+                        <span className="text-red-400 font-medium">${formatPrice(coin.low_24h)}</span>
                       </div>
                     </div>
                   </div>
@@ -303,7 +263,7 @@ export default function WishlistPage() {
                       <DollarSign className="w-4 h-4 text-green-400 mr-2" />
                       <span className="text-xs text-slate-400 uppercase tracking-wider">Market Cap</span>
                     </div>
-                    <div className="text-white font-semibold">${formatNumber(coin.marketCap)}</div>
+                    <div className="text-white font-semibold">${formatNumber(coin.market_cap)}</div>
                   </div>
 
                   {/* Total Volume */}
@@ -312,7 +272,7 @@ export default function WishlistPage() {
                       <BarChart3 className="w-4 h-4 text-purple-400 mr-2" />
                       <span className="text-xs text-slate-400 uppercase tracking-wider">24h Volume</span>
                     </div>
-                    <div className="text-white font-semibold">${formatNumber(coin.totalVolume)}</div>
+                    <div className="text-white font-semibold">${formatNumber(coin.total_volume)}</div>
                   </div>
 
                   {/* Total Supply */}
@@ -321,7 +281,7 @@ export default function WishlistPage() {
                       <Coins className="w-4 h-4 text-orange-400 mr-2" />
                       <span className="text-xs text-slate-400 uppercase tracking-wider">Total Supply</span>
                     </div>
-                    <div className="text-white font-semibold">{formatNumber(coin.totalSupply)}</div>
+                    <div className="text-white font-semibold">{formatNumber(coin.total_supply)}</div>
                   </div>
                 </div>
 
