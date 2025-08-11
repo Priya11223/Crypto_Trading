@@ -98,7 +98,7 @@ export default function CryptoDashboard() {
   const [trendingCoins, setTrendingCoins] = useState<CoinWrapper[]>([])
 
   const hero2 = () => {
-    console.log("This the hero2 funtion here: ");
+    console.log("This the funtion for simplicity");
   }
 
   useEffect(() => {
