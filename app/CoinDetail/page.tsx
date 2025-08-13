@@ -13,7 +13,7 @@ const page = () => {
       {
         <p>Hello there I am sorry was not able to do today as well not the real one</p>
       }
-      Cause of infy cant push relevent today
+      Cause of infy cant push relevent today, interview practice
     </div>
   )
 }
