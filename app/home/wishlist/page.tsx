@@ -307,8 +307,8 @@ export default function WishlistPage() {
         {wishlistCoins.length === 0 && (
           <div className="text-center py-16">
             <Star className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-slate-400 mb-2">Your wishlist is empty</h3>
-            <p className="text-slate-500">Start adding coins to track your favorites</p>
+            <h3 className="text-xl font-semibold text-slate-400 mb-2">Coins not Found</h3>
+            <p className="text-slate-500">Add coins to track favorite</p>
           </div>
         )}
       </div>
