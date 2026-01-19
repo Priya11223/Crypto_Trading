@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import axios from "axios"
 import {
   Bitcoin,
@@ -97,10 +98,6 @@ export default function CryptoDashboard() {
   const [top50, setTop50] = useState<CoinData[]>([])
   const [trendingCoins, setTrendingCoins] = useState<CoinWrapper[]>([])
 
-  const hero2 = () => {
-    console.log("This the funtion for simplicity");
-  }
-
   useEffect(() => {
     const fetchTop50Coins = async () => {
       try {
@@ -115,7 +112,7 @@ export default function CryptoDashboard() {
       try{
         const res = await axios.get('http://localhost:8080/coins/trending');
         setTrendingCoins(res.data.coins.slice(0, 9));
-        console.log(trendingCoins); // not res.data
+        //console.log(trendingCoins); // not res.data
       }catch (error){
         console.error("Error fetching trending coins: ", error);
       }
@@ -168,6 +165,7 @@ export default function CryptoDashboard() {
   const addToWishlist = async (id: string) => {
     try{
       const token = user.jwt;
+      console.log("token");
       const response = await axios.patch(`http://localhost:8080/api/wishlist/add/${id}`, {}, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -206,12 +204,12 @@ export default function CryptoDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex items-center">
-            <img src="/favicon.png" alt="TradeKaro Logo" className="w-8 h-8 mr-3" />
+            <Link href="/home" className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
+              <img src="/favicon.png" alt="TradeKaro Logo" className="w-8 h-8 mr-3" />
               <h1 className="text-xl font-bold bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent">
                 TradeKaro
               </h1>
-            </div>
+            </Link>
 
             {/* Search */}
             <div className="flex-1 max-w-md mx-8">

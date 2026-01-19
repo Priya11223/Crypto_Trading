@@ -1,6 +1,7 @@
 "use client"
 
 import { use, useEffect, useState } from "react"
+import Link from "next/link"
 import {
   Bitcoin,
   TrendingUp,
@@ -16,7 +17,6 @@ import {
   Activity,
   DollarSign,
   Coins,
-  ArrowLeft,
   Trash2,
 } from "lucide-react"
 import { useAuth } from "../../context/AuthContext";
@@ -70,9 +70,16 @@ export default function WishlistPage() {
   }
 
   useEffect(() => {
-    const getWishApi = async () =>{
-      const token = user?.jwt;
-      console.log("Here is token" + token);
+    console.log("useEffect triggered on refresh/mount, user:", user);
+    
+    const getWishApi = async () => {
+      if (!user || !user.jwt) {
+        console.log("User or JWT not available, skipping API call");
+        return;
+      }
+
+      const token = user.jwt;
+      //console.log("getWishApi called, token:", token);
       const response = await axios.get<CoinData[]>('http://localhost:8080/api/wishlist/getUserCoin', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -104,19 +111,13 @@ export default function WishlistPage() {
       <header className="bg-slate-800/80 backdrop-blur-xl border-b border-slate-700/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo and Back Button */}
-            <div className="flex items-center">
-              <button
-                onClick={() => window.history.back()}
-                className="p-2 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-all duration-200 mr-4"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
+            {/* Logo */}
+            <Link href="/home" className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
               <img src="/favicon.png" alt="TradeKaro Logo" className="w-8 h-8 mr-3" />
               <h1 className="text-xl font-bold bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent">
                 TradeKaro
               </h1>
-            </div>
+            </Link>
 
             {/* Search */}
             <div className="flex-1 max-w-md mx-8">
@@ -190,8 +191,12 @@ export default function WishlistPage() {
                 {/* Header Section */}
                 <div className="flex items-center mb-6">
                   <div className="relative mr-4">
-                    <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <span className="text-white font-bold text-2xl drop-shadow-sm">{coin.image}</span>
+                    <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden">
+                      <img 
+                        src={coin.image} 
+                        alt={coin.name}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     {coin.market_cap_rank <= 3 && (
                       <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
