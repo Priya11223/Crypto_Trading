@@ -11,34 +11,8 @@ import {
   Flame,
 } from "lucide-react"
 import { useAuth } from "../context/AuthContext"
-
-interface CoinWrapper {
-  item: {
-    id: string;
-    coin_id: number;
-    name: string;
-    symbol: string;
-    market_cap_rank: number;
-    small: string;
-    large: string;
-    slug: string;
-    price_btc: number;
-    score: number;
-    data: {
-      price: number;
-      price_btc: string;
-      price_change_percentage_24h: {
-        [currency: string]: number;
-      };
-      market_cap: number;
-      market_cap_btc: string;
-      total_volume: string;
-      total_volume_btc: string;
-      sparkline: string;
-      content: string | null;
-    };
-  }
-}
+import { Coin, CoinWrapper } from "@/types/coin"
+import { useRouter } from "next/Navigation"
 
 // Mock user portfolio data
 const portfolioData = [
@@ -48,50 +22,18 @@ const portfolioData = [
   { symbol: "ADA", amount: 15420.5, value: 7478.94, change: -2.15 },
 ]
 
-interface CoinData {
-  id: string;
-  symbol: string;
-  name: string;
-  image: string;
-  current_price: number;
-  market_cap: number;
-  market_cap_rank: number;
-  fully_diluted_valuation: number;
-  total_volume: number;
-  high_24h: number;
-  low_24h: number;
-  price_change_24h: number;
-  price_change_percentage_24h: number;
-  market_cap_change_24h: number;
-  market_cap_change_percentage_24h: number;
-  circulating_supply: number;
-  total_supply: number;
-  max_supply: number;
-  ath: number;
-  ath_change_percentage: number;
-  ath_date: string; 
-  atl: number;
-  atl_change_percentage: number;
-  atl_date: string; 
-  roi: null | {
-    times: number;
-    currency: string;
-    percentage: number;
-  };
-  last_updated: string; 
-}
-
 export default function CryptoDashboard() {
   const {user} = useAuth();
   const [showBalance, setShowBalance] = useState(true)
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [top50, setTop50] = useState<CoinData[]>([])
+  const [top50, setTop50] = useState<Coin[]>([])
   const [trendingCoins, setTrendingCoins] = useState<CoinWrapper[]>([])
+  const router = useRouter();
 
   useEffect(() => {
     const fetchTop50Coins = async () => {
       try {
-        const response = await axios.get<CoinData[]>('http://localhost:8080/coins/top50');
+        const response = await axios.get<Coin[]>('http://localhost:8080/coins/top50');
         setTop50(response.data);
       } catch (error) {
         console.error("Error fetching top 50 coins:", error);
@@ -147,9 +89,10 @@ export default function CryptoDashboard() {
   const coinsPerSlide = 5
   const totalSlides = Math.ceil(top50.length / coinsPerSlide)
 
-  const handleCoinClick = (coin: CoinData) => {
+  const handleCoinClick = (coin: Coin) => {
     // Replace this with your desired action
-    console.log("Coin clicked:", coin);
+    console.log(coin.id);
+    router.push(`home/coin/${coin.id}`);
   };
 
   const addToWishlist = async (id: string) => {
@@ -190,7 +133,7 @@ export default function CryptoDashboard() {
                   <div
                     key={coin.id}
                     onClick={() => handleCoinClick(coin)}
-                    className="flex-shrink-0 w-48 bg-slate-700/30 rounded-lg p-4 hover:bg-slate-700/40 transition-all duration-200 cursor-pointer"
+                    className="flex-shrink-0 w-48 bg-slate-700/30 rounded-lg p-4 hover:bg-slate-700/40 transition-all duration-200 cursor-pointer hover:scale-105"
                   >
                     <div className="flex items-center justify-between mb-3">
                       <img src={coin.image} alt={coin.name} className="w-8 h-8 rounded-full" />
@@ -240,7 +183,7 @@ export default function CryptoDashboard() {
               {trendingCoins.map((coin) => (
                 <div
                   key={coin.item.id}
-                  className="bg-gradient-to-r from-slate-700/30 to-slate-700/20 rounded-lg p-4 hover:from-slate-700/40 hover:to-slate-700/30 transition-all duration-200 cursor-pointer border border-orange-500/20"
+                  className="bg-gradient-to-r from-slate-700/30 to-slate-700/20 rounded-lg p-4 hover:from-slate-700/40 hover:to-slate-700/30 transition-all duration-200 cursor-pointer border border-orange-500/20 hover:scale-105"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center">
@@ -304,7 +247,7 @@ export default function CryptoDashboard() {
               {portfolioData.map((holding) => (
                 <div
                   key={holding.symbol}
-                  className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/40 transition-colors"
+                  className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/40 transition-all duration-200 cursor-pointer hover:scale-[1.02]"
                 >
                   <div className="flex items-center">
                     <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mr-3">

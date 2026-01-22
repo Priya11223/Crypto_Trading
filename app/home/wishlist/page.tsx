@@ -14,44 +14,11 @@ import {
 } from "lucide-react"
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
-
-
-interface CoinData {
-  id: string;
-  symbol: string;
-  name: string;
-  image: string;
-  current_price: number;
-  market_cap: number;
-  market_cap_rank: number;
-  fully_diluted_valuation: number;
-  total_volume: number;
-  high_24h: number;
-  low_24h: number;
-  price_change_24h: number;
-  price_change_percentage_24h: number;
-  market_cap_change_24h: number;
-  market_cap_change_percentage_24h: number;
-  circulating_supply: number;
-  total_supply: number;
-  max_supply: number;
-  ath: number;
-  ath_change_percentage: number;
-  ath_date: string; 
-  atl: number;
-  atl_change_percentage: number;
-  atl_date: string; 
-  roi: null | {
-    times: number;
-    currency: string;
-    percentage: number;
-  };
-  last_updated: string; 
-}
+import { Coin } from "@/types/coin";
 
 export default function WishlistPage() {
   const {user} = useAuth();
-  const [wishlistCoins, setWishlistCoins] = useState<CoinData[]>([])
+  const [wishlistCoins, setWishlistCoins] = useState<Coin[]>([])
 
   const formatNumber = (num: number) => {
     if (num >= 1e9) return (num / 1e9).toFixed(2) + "B"
@@ -71,7 +38,7 @@ export default function WishlistPage() {
 
       const token = user.jwt;
       //console.log("getWishApi called, token:", token);
-      const response = await axios.get<CoinData[]>('http://localhost:8080/api/wishlist/getUserCoin', {
+      const response = await axios.get<Coin[]>('http://localhost:8080/api/wishlist/getUserCoin', {
         headers: {
           Authorization: `Bearer ${token}`,
         }
